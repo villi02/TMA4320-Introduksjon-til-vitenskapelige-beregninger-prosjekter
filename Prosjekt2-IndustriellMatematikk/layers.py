@@ -43,9 +43,9 @@ class Attention(Layer):
         """
         Your code here
         """
-        self.W_O = LinearLayer(k, d)
-        self.W_V = LinearLayer(k, d)
-        self.W_K = LinearLayer(k, d)
+        self.W_O = LinearLayer(k,d)
+        self.W_V = LinearLayer(d,k)
+        self.W_K = LinearLayer(d,k)
         self.W_Q = LinearLayer(k, d)
 
         self.softmax = Softmax()
@@ -58,14 +58,13 @@ class Attention(Layer):
         Your code here
         """
         n = x.shape[2]
-        self.D = np.zeros(n, n)
+        self.D = np.zeros((n, n))
         i1,i2 = np.tril_indices(n,-1)
-        self.D[i1,i2] -= np.inf #creates D matrix
+        self.D[i1,i2] = -np.inf #creates D matrix
+        A = self.softmax.forward(np.einsum('aij,jn,nk,bkt->bit', np.transpose(x,(0,2,1)), self.W_Q.w, self.W_K.w, x) + self.D)
+        self.z_nxt = x + np.einsum('in, nj, ajk,bkt->bik',self.W_O.w, self.W_V.w, x, A)
 
-        A = self.softmax.forward(np.einsum('bni,nij,njk,bnj->bn', x, self.W_Q, self.W_K, x) + self.D)
-        self.z_nxt = x + np.transpose(self.W_O)*self.W_V*x*A
-
-        return self.z_nxt
+        return self.z_nxt   
 
 
     def backward(self,grad):
@@ -92,10 +91,9 @@ class Softmax(Layer):
         self.x = x
         self.Z = np.zeros(x.shape)
         self.epsilon = 10**(-8)
-        for i in range(x.shape[1]):
-            P = np.exp(x[i]-self.x.max(axis=0,keepdims=True))
-            Q = np.sum(self.P,axis=0,keepdims=True)
-            self.Z[i] = P/(Q+self.epsilon)
+        self.P = np.exp(x)
+        Q = np.sum(self.P,axis=1,keepdims=True)
+        self.Z = self.P/(Q+self.epsilon)
         return self.Z
 
 
@@ -117,12 +115,10 @@ class Softmax(Layer):
 
 class CrossEntropy(Layer):
 
-    def __init__(self, D):
+    def __init__(self):
         """
         Your code here
         """
-        self.D = D #datapunkter av form {x,y}
-        self.n = len(D)
         self.epsilon = 10**(-8)
         return
 
@@ -133,7 +129,7 @@ class CrossEntropy(Layer):
         Your code here
         """
         
-        self.Y_hat = x[2*len(y)-1:3*len(y)]
+        self.Y_hat = x  #[2*len(y)-1:3*len(y)]
         n = self.Y_hat.shape[1]
         D = self.Y_hat.shape[0]
         self.p= np.zeros(n)
@@ -146,7 +142,7 @@ class CrossEntropy(Layer):
             self.q = -np.log(self.p)
             self.L += np.sum(self.q)/n
 
-        self.L =self.L/(D)
+        self.L =self.L/(D+self.epsilon )
         return self.L
 
 
@@ -156,6 +152,7 @@ class CrossEntropy(Layer):
         """
         self.Y = np.zeros(self.Y_hat.shape)
         for i in range(len(self.y)):
+            print(self.Y_hat)
             self.Y[i][self.y[i]] = 1 #basicly creates onehot(y)
 
         self.del_loss = (-1/self.n)*(self.Y/(self.Y_hat+self.epsilon))
