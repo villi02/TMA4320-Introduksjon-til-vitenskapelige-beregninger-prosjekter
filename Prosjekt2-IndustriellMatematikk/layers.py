@@ -39,10 +39,16 @@ class Layer:
 
 class Attention(Layer):
 
-    def __init__(self,your_arguments_here):
+    def __init__(self,d , k):
         """
         Your code here
         """
+        self.W_O = LinearLayer(k, d)
+        self.W_V = LinearLayer(k, d)
+        self.W_K = LinearLayer(k, d)
+        self.W_Q = LinearLayer(k, d)
+
+        self.softmax = Softmax()
         return
 
         
@@ -51,7 +57,15 @@ class Attention(Layer):
         """
         Your code here
         """
-        return
+        n = x.shape[2]
+        self.D = np.zeros(n, n)
+        i1,i2 = np.tril_indices(n,-1)
+        self.D[i1,i2] -= np.inf #creates D matrix
+
+        A = self.softmax.forward(np.einsum('bni,nij,njk,bnj->bn', x, self.W_Q, self.W_K, x) + self.D)
+        self.z_nxt = x + np.transpose(self.W_O)*self.W_V*x*A
+
+        return self.z_nxt
 
 
     def backward(self,grad):
@@ -64,7 +78,7 @@ class Attention(Layer):
 
 class Softmax(Layer):
 
-    def __init__(self,x):
+    def __init__(self):
         """
         Your code here
         """
@@ -143,7 +157,7 @@ class CrossEntropy(Layer):
         self.Y = np.zeros(self.Y_hat.shape)
         for i in range(len(self.y)):
             self.Y[i][self.y[i]] = 1 #basicly creates onehot(y)
-            
+
         self.del_loss = (-1/self.n)*(self.Y/(self.Y_hat+self.epsilon))
         return self.del_loss
     
