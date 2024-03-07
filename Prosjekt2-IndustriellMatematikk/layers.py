@@ -51,6 +51,10 @@ class Attention(Layer):
         self.W_V_T = np.transpose(self.W_V.w)
         self.W_K_T = np.transpose(self.W_K.w)
         self.W_Q_T = np.transpose(self.W_Q.w)
+        self.params = {"W_O": {'w': self.W_O.w, 'd': None},
+                       "W_V": {'w': self.W_V.w, 'd': None},
+                       "W_K": {'w': self.W_K.w, 'd': None},
+                       "W_Q": {'w': self.W_Q.w, 'd': None}}
 
         self.softmax = Softmax()
         return
@@ -80,6 +84,9 @@ class Attention(Layer):
         grad_S = self.softmax.backward(np.einsum('abc, dce ->dbe',np.transpose(self.x,(0,2,1)),grad_OV))
         del_L = grad + np.einsum('abc, dce ->dbe', grad_OV, np.transpose(self.A, (0,2,1)))+np.einsum('ab,bc, kcd, lde -> lae', self.W_K_T, self.W_Q.w, self.x, grad_S)
         del_L += np.einsum('ab,bc, kcd, lde -> lae', self.W_Q_T, self.W_K.w, self.x, np.transpose(grad_S,(0,2,1)))
+        for param_key in self.params:
+            self.params[param_key]['d'] = np.zeros_like(self.params[param_key]['w'])
+
         return del_L
     
 
