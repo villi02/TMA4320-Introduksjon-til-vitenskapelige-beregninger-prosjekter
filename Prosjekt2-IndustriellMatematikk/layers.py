@@ -64,7 +64,7 @@ class Attention(Layer):
 
 class Softmax(Layer):
 
-    def __init__(self,your_arguments_here):
+    def __init__(self,x):
         """
         Your code here
         """
@@ -75,39 +75,77 @@ class Softmax(Layer):
         """
         Your code here
         """
-        return
+        self.x = x
+        self.Z = np.zeros(x.shape)
+        self.epsilon = 10**(-8)
+        for i in range(x.shape[1]):
+            P = np.exp(x[i]-self.x.max(axis=0,keepdims=True))
+            Q = np.sum(self.P,axis=0,keepdims=True)
+            self.Z[i] = P/(Q+self.epsilon)
+        return self.Z
 
 
     def backward(self,grad):
         """
         Your code here
         """
-        return
+        self.b = np.zeros(self.x.shape)
+        for i in range(self.x.shape[1]):
+            P = np.exp(self.x[i]-self.x.max(axis=0,keepdims=True))
+            Q = np.sum(self.P,axis=0,keepdims=True)
+            S = P/(Q*Q+self.epsilon)
+            self.b[i] = grad*self.Z[i]- np.sum(grad*S)*P     
+
+        return self.b
+        
 
 
 
 class CrossEntropy(Layer):
 
-    def __init__(self,your_arguments_here):
+    def __init__(self, D):
         """
         Your code here
         """
+        self.D = D #datapunkter av form {x,y}
+        self.n = len(D)
+        self.epsilon = 10**(-8)
         return
 
         
 
-    def forward(self,x):
+    def forward(self, x, y):
         """
         Your code here
         """
-        return
+        
+        self.Y_hat = x[2*len(y)-1:3*len(y)]
+        n = self.Y_hat.shape[1]
+        D = self.Y_hat.shape[0]
+        self.p= np.zeros(n)
+        self.L = 0
+        self.y = y
+
+        for j in range(D-1):
+            for i in range(n-1):
+                self.p[i] = self.Y_hat[i][y[i]] #gets away without using Y matrix because we can just use index of y
+            self.q = -np.log(self.p)
+            self.L += np.sum(self.q)/n
+
+        self.L =self.L/(D)
+        return self.L
 
 
     def backward(self):
         """
         Your code here
         """
-        return
+        self.Y = np.zeros(self.Y_hat.shape)
+        for i in range(len(self.y)):
+            self.Y[i][self.y[i]] = 1 #basicly creates onehot(y)
+            
+        self.del_loss = (-1/self.n)*(self.Y/(self.Y_hat+self.epsilon))
+        return self.del_loss
     
 
 
