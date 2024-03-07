@@ -43,10 +43,14 @@ class Attention(Layer):
         """
         Your code here
         """
-        self.W_O = LinearLayer(k,d)
+        self.W_O = LinearLayer(d,k)
         self.W_V = LinearLayer(d,k)
         self.W_K = LinearLayer(d,k)
-        self.W_Q = LinearLayer(k, d)
+        self.W_Q = LinearLayer(d,k)
+        self.W_O_T = np.transpose(self.W_O.w)
+        self.W_V_T = np.transpose(self.W_V.w)
+        self.W_K_T = np.transpose(self.W_K.w)
+        self.W_Q_T = np.transpose(self.W_Q.w)
 
         self.softmax = Softmax()
         return
@@ -58,11 +62,12 @@ class Attention(Layer):
         Your code here
         """
         n = x.shape[2]
+        self.x = x
         self.D = np.zeros((n, n))
         i1,i2 = np.tril_indices(n,-1)
         self.D[i1,i2] = -np.inf #creates D matrix
-        A = self.softmax.forward(np.einsum('aij,jn,nk,bkt->bit', np.transpose(x,(0,2,1)), self.W_Q.w, self.W_K.w, x) + self.D)
-        self.z_nxt = x + np.einsum('in, nj, ajk,bkt->bik',self.W_O.w, self.W_V.w, x, A)
+        self.A = self.softmax.forward(np.einsum('aij,jn,nk,bkt->bit', np.transpose(x,(0,2,1)), self.W_Q_T, self.W_K.w, x) + self.D)
+        self.z_nxt = x + np.einsum('in, nj, ajk,bkt->bik',self.W_O_T, self.W_V.w, x, self.A)
 
         return self.z_nxt   
 
@@ -71,7 +76,11 @@ class Attention(Layer):
         """
         Your code here
         """
-        return
+        grad_OV = np.einsum('ab,bc,kcd -> kad',self.W_V_T,self.W_O.w, grad )
+        grad_S = self.softmax.backward(np.einsum('abc, dce ->dbe',np.transpose(self.x,(0,2,1)),grad_OV))
+        del_L = grad + np.einsum('abc, dce ->dbe', grad_OV, np.transpose(self.A, (0,2,1)))+np.einsum('ab,bc, kcd, lde -> lae', self.W_K_T, self.W_Q.w, self.x, grad_S)
+        del_L += np.einsum('ab,bc, kcd, lde -> lae', self.W_Q_T, self.W_K.w, self.x, np.transpose(grad_S,(0,2,1)))
+        return del_L
     
 
 
@@ -102,11 +111,10 @@ class Softmax(Layer):
         Your code here
         """
         self.b = np.zeros(self.x.shape)
-        for i in range(self.x.shape[1]):
-            P = np.exp(self.x[i]-self.x.max(axis=0,keepdims=True))
-            Q = np.sum(self.P,axis=0,keepdims=True)
-            S = P/(Q*Q+self.epsilon)
-            self.b[i] = grad*self.Z[i]- np.sum(grad*S)*P     
+        P = np.exp(self.x)
+        Q = np.sum(self.P,axis=0,keepdims=True)
+        S = P/(Q*Q+self.epsilon)
+        self.b = grad*self.Z- np.sum(grad*S)*P     
 
         return self.b
         
@@ -130,17 +138,17 @@ class CrossEntropy(Layer):
         """
         
         self.Y_hat = x  #[2*len(y)-1:3*len(y)]
-        n = self.Y_hat.shape[1]
+        self.n = self.Y_hat.shape[2]
         D = self.Y_hat.shape[0]
-        self.p= np.zeros(n)
+        self.p= np.zeros(self.n)
         self.L = 0
         self.y = y
 
         for j in range(D-1):
-            for i in range(n-1):
-                self.p[i] = self.Y_hat[i][y[i]] #gets away without using Y matrix because we can just use index of y
+            for i in range(self.n-1):
+                self.p[i] = np.mean(self.Y_hat[i][y[i]]) #gets away without using Y matrix because we can just use index of y
             self.q = -np.log(self.p)
-            self.L += np.sum(self.q)/n
+            self.L += np.sum(self.q)/self.n
 
         self.L =self.L/(D+self.epsilon )
         return self.L
@@ -152,9 +160,7 @@ class CrossEntropy(Layer):
         """
         self.Y = np.zeros(self.Y_hat.shape)
         for i in range(len(self.y)):
-            print(self.Y_hat)
-            self.Y[i][self.y[i]] = 1 #basicly creates onehot(y)
-
+            self.Y[i][self.y[i]] = 1 
         self.del_loss = (-1/self.n)*(self.Y/(self.Y_hat+self.epsilon))
         return self.del_loss
     
@@ -362,7 +368,7 @@ class FeedForward(Layer):
         """
 
         #We use backward pass of the linear layers and activation.
-        #Recall that the backward pass reverse the order of the layers. 
+        #Recall that the backward pass reverse the order of the layers.
         grad_feed_forward = self.l1.backward(self.activation.backward(self.l2.backward(grad)))
 
         #Since forward pass is x + W2.T@Relu(W1@x)
