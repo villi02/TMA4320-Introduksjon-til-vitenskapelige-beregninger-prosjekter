@@ -47,10 +47,6 @@ class Attention(Layer):
         self.W_V = LinearLayer(d,k)
         self.W_K = LinearLayer(d,k)
         self.W_Q = LinearLayer(d,k)
-        self.W_O_T = np.transpose(self.W_O.w)
-        self.W_V_T = np.transpose(self.W_V.w)
-        self.W_K_T = np.transpose(self.W_K.w)
-        self.W_Q_T = np.transpose(self.W_Q.w)
         self.params = {"W_O": {'w': self.W_O.w, 'd': None},
                        "W_V": {'w': self.W_V.w, 'd': None},
                        "W_K": {'w': self.W_K.w, 'd': None},
@@ -65,14 +61,18 @@ class Attention(Layer):
         """
         Your code here
         """
+        self.params["W_O"]['w']
+        self.params["W_V"]['w']
+        self.params["W_K"]['w']
+        self.params["W_Q"]['w']
+
         n = x.shape[2]
         self.x = x
         self.D = np.zeros((n, n))
         i1,i2 = np.tril_indices(n,-1)
         self.D[i1,i2] = -np.inf #creates D matrix
-        self.A = self.softmax.forward(np.einsum('aij,jn,nk,bkt->bit', np.transpose(x,(0,2,1)), self.W_Q_T, self.W_K.w, x) + self.D)
-        self.z_nxt = x + np.einsum('in, nj, ajk,bkt->bik',self.W_O_T, self.W_V.w, x, self.A)
-
+        self.A = self.softmax.forward(np.einsum('aij,jn,nk,bkt->bit', np.transpose(x,(0,2,1)), np.transpose(self.params["W_Q"]['w']), self.params["W_K"]['w'], x) + self.D)
+        self.z_nxt = x + np.einsum('in, nj, ajk,bkt->bik',np.transpose(self.params["W_O"]['w']), self.params["W_V"]['w'], x, self.A)
         return self.z_nxt   
 
 
@@ -80,12 +80,13 @@ class Attention(Layer):
         """
         Your code here
         """
-        grad_OV = np.einsum('ab,bc,kcd -> kad',self.W_V_T,self.W_O.w, grad )
+        grad_OV = np.einsum('ab,bc,kcd -> kad',np.transpose(self.params["W_V"]['w']),self.params["W_O"]['w'], grad )
         grad_S = self.softmax.backward(np.einsum('abc, dce ->dbe',np.transpose(self.x,(0,2,1)),grad_OV))
-        del_L = grad + np.einsum('abc, dce ->dbe', grad_OV, np.transpose(self.A, (0,2,1)))+np.einsum('ab,bc, kcd, lde -> lae', self.W_K_T, self.W_Q.w, self.x, grad_S)
-        del_L += np.einsum('ab,bc, kcd, lde -> lae', self.W_Q_T, self.W_K.w, self.x, np.transpose(grad_S,(0,2,1)))
+        del_L = grad + np.einsum('abc, dce ->dbe', grad_OV, np.transpose(self.A, (0,2,1)))+np.einsum('ab,bc, kcd, lde -> lae', np.transpose(self.params["W_K"]['w']), self.params["W_Q"]['w'], self.x, grad_S)
+        del_L += np.einsum('ab,bc, kcd, lde -> lae', np.transpose(self.params["W_Q"]['w']), self.params["W_K"]['w'], self.x, np.transpose(grad_S,(0,2,1)))
+
         for param_key in self.params:
-            self.params[param_key]['d'] = np.zeros_like(self.params[param_key]['w'])
+            self.params[param_key]['d'] = np.transpose(np.mean(del_L[:,:,-5:], axis=0))
 
         return del_L
     
