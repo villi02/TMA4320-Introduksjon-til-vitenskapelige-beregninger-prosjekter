@@ -16,7 +16,6 @@ def onehot(x,m):
                     x[i,j,k] = 1 if x[i,j] = k, else 0 
                     for all i,j
     """
-
     b,n = x.shape
 
     #Making sure that x is an array of integers

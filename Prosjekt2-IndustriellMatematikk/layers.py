@@ -1,5 +1,6 @@
 import numpy as np
 from utils import onehot
+#from neural_network import NeuralNetwork
 
 class Layer:
 
@@ -16,7 +17,33 @@ class Layer:
     def backward(self,grad):
         raise NotImplementedError
     
-    def step_adam(self):
+    def step_adam(self, iter, alpha = 0.01, beta1 = 0.9, beta2 = 0.999, epsilon = 10**(-8)):
+        """
+        Performs a gradient descent step given learning rate.
+        Assumes that the layer has a parameter dictionary "params" on the form
+
+        params = {
+            'w1': {         
+                'w': w,         The parameter matrix
+                'd': d,         The gradient of loss wrt the parameter matrix
+                'V': V,         The gradient matrix 
+                'M': M,         The gradient matrix 
+                },
+            'w2': {....},
+            
+        }
+        where each parameter has a key 'w' for weights and 'd' for gradients.
+        """
+        for param in self.params:
+            G = self.params[param]['d']
+            self.params[param]['M'] = beta1*self.params[param]['M'] + (1-beta1)*G
+            self.params[param]['V'] = beta2*self.params[param]['V']+(1-beta2)*(G*G)
+            M_hat = (1/(1-beta1**iter))*self.params[param]['M']
+            V_hat = (1/(1-beta2**iter))*self.params[param]['V']
+            self.params[param]['w'] = self.params[param]['w'] - alpha*(M_hat/(V_hat+epsilon))
+
+
+
         return
     
     def step_gd(self,alpha):
@@ -36,8 +63,7 @@ class Layer:
         """
         for param in self.params:
             self.params[param]['w'] -= alpha*self.params[param]['d']
-
-
+ 
 
 
 class Attention(Layer):
@@ -50,10 +76,10 @@ class Attention(Layer):
         self.W_V = LinearLayer(d,k)
         self.W_K = LinearLayer(d,k)
         self.W_Q = LinearLayer(d,k)
-        self.params = {"W_O": {'w': self.W_O.w, 'd': None},
-                       "W_V": {'w': self.W_V.w, 'd': None},
-                       "W_K": {'w': self.W_K.w, 'd': None},
-                       "W_Q": {'w': self.W_Q.w, 'd': None}}
+        self.params = {"W_O": {'w': self.W_O.w, 'd': np.zeros_like(self.W_O.w), 'V': np.zeros_like(self.W_O.w), 'M': np.zeros_like(self.W_O.w)},
+                       "W_V": {'w': self.W_V.w, 'd': np.zeros_like(self.W_V.w), 'V': np.zeros_like(self.W_V.w), 'M': np.zeros_like(self.W_V.w)},
+                       "W_K": {'w': self.W_K.w, 'd': np.zeros_like(self.W_K.w), 'V': np.zeros_like(self.W_K.w), 'M': np.zeros_like(self.W_K.w)},
+                       "W_Q": {'w': self.W_Q.w, 'd': np.zeros_like(self.W_Q.w), 'V': np.zeros_like(self.W_Q.w), 'M': np.zeros_like(self.W_Q.w)}}
 
         self.softmax = Softmax()
         return
@@ -124,6 +150,8 @@ class Softmax(Layer):
         P = np.exp(self.x)
         Q = np.sum(self.P,axis=0,keepdims=True)
         S = P/(Q*Q+self.epsilon)
+        print(grad.shape)
+        print(self.Z.shape)
         self.b = grad*self.Z- np.sum(grad*S)*P     
 
         return self.b
@@ -189,7 +217,7 @@ class LinearLayer(Layer):
         #scaled with the init_scale
         self.w = np.random.randn(output_size,input_size)*init_scale
         self.params = {"w":{'w':self.w,
-                            'd':np.zeros_like(self.w)}}
+                            'd':np.zeros_like(self.w), 'V': np.zeros_like(self.w), 'M': np.zeros_like(self.w)}}
         
 
     def forward(self,x):
@@ -266,7 +294,7 @@ class EmbedPosition(Layer):
         self.w = np.random.randn(d,n_max)*init_scale
 
         #Initialize the parameter dictionary for weight with key "Wp"
-        self.params = {"Wp":{'w':self.w,'d':None}}
+        self.params = {"Wp":{'w':self.w,'d':None, 'V': np.zeros_like(self.w), 'M': np.zeros_like(self.w)}}
 
     def forward(self,X):
 
