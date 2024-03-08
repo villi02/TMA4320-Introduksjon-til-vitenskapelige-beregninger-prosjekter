@@ -144,33 +144,31 @@ class CrossEntropy(Layer):
         """
         Your code here
         """
-        
-        self.Y_hat = x  #[2*len(y)-1:3*len(y)]
-        self.n = self.Y_hat.shape[2]
-        D = self.Y_hat.shape[0]
-        self.p= np.zeros(self.n)
-        self.L = 0
-        self.y = y
-
+        self.x = x
+        self.Y_hat = x[:,:,-6:] #husk slice
+        self.Y = onehot(y, x.shape[1])
+        ones = np.ones(x.shape[1])
+        self.P = np.transpose(ones)@(self.Y_hat*self.Y)
+        self.Q = -np.log(self.P)
+        D = x.shape[0]
+        self.n = x.shape[2]
+        L=0
         for j in range(D-1):
-            for i in range(self.n-1):
-                self.p[i] = np.mean(self.Y_hat[i][y[i]]) #gets away without using Y matrix because we can just use index of y
-            self.q = -np.log(self.p)
-            self.L += np.sum(self.q)/self.n
-
-        self.L =self.L/(D+self.epsilon )
-        return self.L
+            for i in range(self.n-1):    
+                L += self.Q[i][j]
+        L = L/(D*self.n)
+        return L
 
 
     def backward(self):
         """
         Your code here
         """
-        self.Y = np.zeros(self.Y_hat.shape)
-        for i in range(len(self.y)):
-            self.Y[i][self.y[i]] = 1 
-        self.del_loss = (-1/self.n)*(self.Y/(self.Y_hat+self.epsilon))
-        return self.del_loss
+        epsilon = 10**(-8)
+        del_loss = (-1/self.n)*(self.Y/(self.Y_hat+epsilon))
+        pad_width = [(0,0), (0,0), (0,1)]
+        del_loss = np.pad(del_loss, pad_width, mode = 'constant') #adds row of 0 to adjust for shape in softmax
+        return del_loss
     
 
 
