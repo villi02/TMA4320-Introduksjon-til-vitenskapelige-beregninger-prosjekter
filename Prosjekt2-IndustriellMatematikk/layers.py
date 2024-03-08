@@ -40,7 +40,7 @@ class Layer:
             self.params[param]['V'] = beta2*self.params[param]['V']+(1-beta2)*(G*G)
             M_hat = (1/(1-beta1**iter))*self.params[param]['M']
             V_hat = (1/(1-beta2**iter))*self.params[param]['V']
-            self.params[param]['w'] = self.params[param]['w'] - alpha*(M_hat/(V_hat+epsilon))
+            self.params[param]['w'] = self.params[param]['w'] - alpha*(M_hat/(np.sqrt(V_hat) +epsilon))
 
 
 

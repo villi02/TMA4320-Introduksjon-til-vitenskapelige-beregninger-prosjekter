@@ -45,6 +45,7 @@ class NeuralNetwork():
         but only if it is of the class LinearLayer.
         """
         for layer in self.layers:
+            print('hei')
             #Check if layer is of class a class that has parameters
             if isinstance(layer,(LinearLayer,EmbedPosition,FeedForward,Attention)):
                 layer.step_adam(iter)
