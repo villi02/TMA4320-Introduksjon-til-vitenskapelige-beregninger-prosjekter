@@ -150,8 +150,6 @@ class Softmax(Layer):
         P = np.exp(self.x)
         Q = np.sum(self.P,axis=0,keepdims=True)
         S = P/(Q*Q+self.epsilon)
-        print(grad.shape)
-        print(self.Z.shape)
         self.b = grad*self.Z- np.sum(grad*S)*P     
 
         return self.b
