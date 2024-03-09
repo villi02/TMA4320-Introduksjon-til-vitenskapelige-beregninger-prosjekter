@@ -42,8 +42,6 @@ class Layer:
             V_hat = (1/(1-beta2**iter))*self.params[param]['V']
             self.params[param]['w'] = self.params[param]['w'] - alpha*(M_hat/(np.sqrt(V_hat) +epsilon))
 
-
-
         return
     
     def step_gd(self,alpha):
@@ -104,17 +102,16 @@ class Attention(Layer):
 
     def backward(self,grad):
         """
-        Your code here
+        Your code here  
         """
         grad_OV = np.einsum('ab,bc,kcd -> kad',np.transpose(self.params["W_V"]['w']),self.params["W_O"]['w'], grad )
         grad_S = self.softmax.backward(np.einsum('abc, dce ->dbe',np.transpose(self.x,(0,2,1)),grad_OV))
         del_L = grad + np.einsum('abc, ce ->abe', grad_OV, np.transpose(self.A))+np.einsum('ab,bc, kcd, lde -> lae', np.transpose(self.params["W_K"]['w']), self.params["W_Q"]['w'], self.x, grad_S)
         del_L += np.einsum('ab,bc, kcd, lde -> lae', np.transpose(self.params["W_Q"]['w']), self.params["W_K"]['w'], self.x, np.transpose(grad_S,(0,2,1)))
-
-        self.params["W_O"]['d'] = np.einsum('ab, kbc, cd, mde -> ae',self.params["W_V"]['w'], self.x, self.A, np.transpose(grad, (0,2,1)))
-        self.params["W_V"]['d'] = np.einsum('ab, kbc, cd, mde -> ae',self.params["W_O"]['w'], grad, np.transpose(self.A), np.transpose(self.x, (0,2,1)))
-        self.params["W_K"]['d'] = np.einsum('ab, kbc, lcd, mde -> ae',self.params["W_Q"]['w'], self.x, grad_S, np.transpose(self.x, (0,2,1)))
-        self.params["W_Q"]['d'] = np.einsum('ab, kbc, lcd, mde -> ae',self.params["W_K"]['w'], self.x, np.transpose(grad_S, (0,2,1)), np.transpose(self.x, (0,2,1)))
+        self.params["W_O"]['d'] = np.einsum('abc, dce -> be', np.matmul(np.matmul(self.params["W_V"]['w'], self.x), self.A), np.transpose(grad, (0, 2, 1)))
+        self.params["W_V"]['d'] = np.einsum('abc, dce -> be',np.matmul(np.matmul(self.params["W_O"]['w'], grad), np.transpose(self.A)), np.transpose(self.x, (0, 2, 1)))
+        self.params["W_K"]['d'] = np.einsum('abc, dce -> be',np.matmul(np.matmul(self.params["W_K"]['w'], self.x), grad_S), np.transpose(self.x, (0, 2, 1)))
+        self.params["W_Q"]['d'] = np.einsum('abc, dce -> be',np.matmul(np.matmul(self.params["W_Q"]['w'], self.x), np.transpose(grad_S, (0, 2, 1))), np.transpose(self.x, (0, 2, 1)))
 
         return del_L
     
@@ -183,7 +180,7 @@ class CrossEntropy(Layer):
         L=0
         for j in range(D-1):
             for i in range(self.n-1):    
-                L += self.Q[i][j]
+                L += self.Q[j][i]
         L = L/(D*self.n)
         return L
 
