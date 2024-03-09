@@ -191,8 +191,9 @@ class CrossEntropy(Layer):
         """
         epsilon = 10**(-8)
         del_loss = (-1/self.n)*(self.Y/(self.Y_hat+epsilon))
-        pad_width = [(0,0), (0,0), (0,1)]
-        del_loss = np.pad(del_loss, pad_width, mode = 'constant') #adds row of 0 to adjust for shape in softmax
+        if (del_loss.shape != self.x.shape):
+            pad_width = [(0,0), (0,0), (0,1)]
+            del_loss = np.pad(del_loss, pad_width, mode = 'constant') #adds row of 0 to adjust for shape in softmax
         return del_loss
     
 
