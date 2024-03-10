@@ -61,25 +61,26 @@ class Layer:
         """
         for param in self.params:
             self.params[param]['w'] -= alpha*self.params[param]['d']
- 
 
 
 class Attention(Layer):
 
-    def __init__(self,d , k):
+    def __init__(self,d, k):
         """
         Your code here
         """
-        self.W_O = LinearLayer(d,k)
-        self.W_V = LinearLayer(d,k)
-        self.W_K = LinearLayer(d,k)
-        self.W_Q = LinearLayer(d,k)
+
+        self.W_O = LinearLayer(d, k)
+        self.W_V = LinearLayer(d, k)
+        W_K = LinearLayer(d, k)
+        W_Q = LinearLayer(d,k)
         self.params = {"W_O": {'w': self.W_O.w, 'd': np.zeros_like(self.W_O.w), 'V': np.zeros_like(self.W_O.w), 'M': np.zeros_like(self.W_O.w)},
                        "W_V": {'w': self.W_V.w, 'd': np.zeros_like(self.W_V.w), 'V': np.zeros_like(self.W_V.w), 'M': np.zeros_like(self.W_V.w)},
-                       "W_K": {'w': self.W_K.w, 'd': np.zeros_like(self.W_K.w), 'V': np.zeros_like(self.W_K.w), 'M': np.zeros_like(self.W_K.w)},
-                       "W_Q": {'w': self.W_Q.w, 'd': np.zeros_like(self.W_Q.w), 'V': np.zeros_like(self.W_Q.w), 'M': np.zeros_like(self.W_Q.w)}}
+                       "W_K": {'w': W_K.w, 'd': np.zeros_like(W_K.w), 'V': np.zeros_like(W_K.w), 'M': np.zeros_like(W_K.w)},
+                       "W_Q": {'w': W_Q.w, 'd': np.zeros_like(W_Q.w), 'V': np.zeros_like(W_Q.w), 'M': np.zeros_like(W_Q.w)}}
 
         self.softmax = Softmax()
+        
         return
 
         
@@ -91,28 +92,32 @@ class Attention(Layer):
         
 
         n = x.shape[2]
+        self.b = x.shape[0]
         self.x = x
         self.D = np.zeros((n, n))
         i1,i2 = np.tril_indices(n,-1)
         self.D[i1,i2] = -np.inf #creates D matrix
-        self.A = self.softmax.forward(np.einsum('aij,jn,nk,bkt->it', np.transpose(x,(0,2,1)), np.transpose(self.params["W_Q"]['w']), self.params["W_K"]['w'], x) + self.D)
-        self.z_nxt = x + np.einsum('in, nj, ajk,kt->aik',np.transpose(self.params["W_O"]['w']), self.params["W_V"]['w'], x, self.A)
-        return self.z_nxt   
+
+        self.A = self.softmax.forward(np.einsum('aij,jn,nk,bkt->bit', np.transpose(x,(0,2,1)), np.transpose(self.params["W_Q"]['w']), self.params["W_K"]['w'], x, optimize=True) + self.D)
+        return  x + np.einsum('in, nj, ajk,bkt->aik',np.transpose(self.params["W_O"]['w']), self.params["W_V"]['w'], x, self.A, optimize= True)  
 
 
     def backward(self,grad):
         """
         Your code here  
         """
-        grad_OV = np.einsum('ab,bc,kcd -> kad',np.transpose(self.params["W_V"]['w']),self.params["W_O"]['w'], grad )
-        grad_S = self.softmax.backward(np.einsum('abc, dce ->dbe',np.transpose(self.x,(0,2,1)),grad_OV))
-        del_L = grad + np.einsum('abc, ce ->abe', grad_OV, np.transpose(self.A))+np.einsum('ab,bc, kcd, lde -> lae', np.transpose(self.params["W_K"]['w']), self.params["W_Q"]['w'], self.x, grad_S)
-        del_L += np.einsum('ab,bc, kcd, lde -> lae', np.transpose(self.params["W_Q"]['w']), self.params["W_K"]['w'], self.x, np.transpose(grad_S,(0,2,1)))
-        self.params["W_O"]['d'] = np.einsum('abc, dce -> be', np.matmul(np.matmul(self.params["W_V"]['w'], self.x), self.A), np.transpose(grad, (0, 2, 1)))
-        self.params["W_V"]['d'] = np.einsum('abc, dce -> be',np.matmul(np.matmul(self.params["W_O"]['w'], grad), np.transpose(self.A)), np.transpose(self.x, (0, 2, 1)))
-        self.params["W_K"]['d'] = np.einsum('abc, dce -> be',np.matmul(np.matmul(self.params["W_K"]['w'], self.x), grad_S), np.transpose(self.x, (0, 2, 1)))
-        self.params["W_Q"]['d'] = np.einsum('abc, dce -> be',np.matmul(np.matmul(self.params["W_Q"]['w'], self.x), np.transpose(grad_S, (0, 2, 1))), np.transpose(self.x, (0, 2, 1)))
+        grad_OV = np.einsum('ab,bc,kcd -> kad',np.transpose(self.params["W_V"]['w']),self.params["W_O"]['w'], grad, optimize= True )
+        sotfmaxfuckery = np.einsum('abc, dce ->dbe',np.transpose(self.x,(0,2,1)),grad_OV, optimize= True)
+        grad_S = self.softmax.backward(np.einsum('abc, dce ->dbe',np.transpose(self.x,(0,2,1)),grad_OV, optimize= True))
 
+        del_L = grad + np.einsum('abc, kce ->abe', grad_OV, np.transpose(self.A,(0,2,1)), optimize= True)
+        del_L += np.einsum('ab,bc, kcd, lde -> lae', np.transpose(self.params["W_K"]['w']), self.params["W_Q"]['w'], self.x, grad_S, optimize= True)
+        del_L += np.einsum('ab,bc, kcd, lde -> lae', np.transpose(self.params["W_Q"]['w']), self.params["W_K"]['w'], self.x, np.transpose(grad_S,(0,2,1)), optimize= True)
+
+        self.params["W_O"]['d'] = np.einsum('ab, kbc, lcd, mde -> ae',self.params["W_V"]['w'], self.x, self.A, np.transpose(grad, (0, 2, 1)), optimize = True)/self.b
+        self.params["W_V"]['d'] = np.einsum('ab, kbc, lcd, mde -> ae',self.params["W_O"]['w'],grad, np.transpose(self.A,(0,2,1)),np.transpose(self.x, (0, 2, 1)), optimize = True)/self.b
+        self.params["W_K"]['d'] = np.einsum('ab, kbc, lcd, mde -> ae',self.params["W_Q"]['w'], self.x,  grad_S, np.transpose(self.x, (0, 2, 1)), optimize = True)/self.b
+        self.params["W_Q"]['d'] = np.einsum('ab, kbc, lcd, mde -> ae',self.params["W_K"]['w'], self.x, np.transpose(grad_S, (0, 2, 1)), np.transpose(self.x, (0, 2, 1)), optimize = True)/self.b
         return del_L
     
 
@@ -123,6 +128,7 @@ class Softmax(Layer):
         """
         Your code here
         """
+        self.epsilon = 10**(-8)
         return
 
     
@@ -131,11 +137,9 @@ class Softmax(Layer):
         Your code here
         """
         self.x = x
-        self.Z = np.zeros(x.shape)
-        self.epsilon = 10**(-8)
-        self.P = np.exp(x)
-        Q = np.sum(self.P,axis=1,keepdims=True)
-        self.Z = self.P/(Q+self.epsilon)
+        self.P = np.exp(x - np.max(x, axis=1, keepdims=True))
+        self.Q = np.sum(self.P,axis=1,keepdims=True)
+        self.Z =self.P/(self.Q+self.epsilon)
         return self.Z
 
 
@@ -143,15 +147,9 @@ class Softmax(Layer):
         """
         Your code here
         """
-        self.b = np.zeros(self.x.shape)
-        P = np.exp(self.x)
-        Q = np.sum(self.P,axis=0,keepdims=True)
-        S = P/(Q*Q+self.epsilon)
-        self.b = grad*self.Z- np.sum(grad*S)*P     
-
-        return self.b
-        
-
+       
+        S = self.P / (self.Q * self.Q + self.epsilon) 
+        return  grad*self.Z- np.sum((grad+self.epsilon)*S,axis = 1, keepdims = True)*self.P 
 
 
 class CrossEntropy(Layer):
@@ -170,30 +168,21 @@ class CrossEntropy(Layer):
         Your code here
         """
         self.x = x
-        self.Y_hat = x[:,:,-6:] #husk slice
-        self.Y = onehot(y, x.shape[1])
-        ones = np.ones(x.shape[1])
-        self.P = np.transpose(ones)@(self.Y_hat*self.Y)
-        self.Q = -np.log(self.P)
-        D = x.shape[0]
-        self.n = x.shape[2]
-        L=0
-        for j in range(D-1):
-            for i in range(self.n-1):    
-                L += self.Q[j][i]
-        L = L/(D*self.n)
-        return L
+        self.b, m, self.n = self.x.shape
+        self.Y_hat = x[:,:,-y.shape[-1]:] #husk slice
+        self.Y = onehot(y, m)
+        P = np.sum((self.Y_hat*self.Y), axis = 1)
+        Q = -np.log(P+ self.epsilon)
+        return np.mean(Q)
 
 
     def backward(self):
         """
         Your code here
         """
-        epsilon = 10**(-8)
-        del_loss = (-1/self.n)*(self.Y/(self.Y_hat+epsilon))
-        if (del_loss.shape != self.x.shape):
-            pad_width = [(0,0), (0,0), (0,1)]
-            del_loss = np.pad(del_loss, pad_width, mode = 'constant') #adds row of 0 to adjust for shape in softmax
+        Z = np.zeros_like(self.x)
+        Z[:,:,-self.Y.shape[-1]:] =self.Y
+        del_loss = (-1/self.n*self.b)*(Z/(self.x+self.epsilon))
         return del_loss
     
 
@@ -211,7 +200,7 @@ class LinearLayer(Layer):
 
         #Initialize weights using a sample from the normal distribution
         #scaled with the init_scale
-        self.w = np.random.randn(output_size,input_size)*init_scale
+        self.w = np.random.randn( output_size, input_size)*init_scale
         self.params = {"w":{'w':self.w,
                             'd':np.zeros_like(self.w), 'V': np.zeros_like(self.w), 'M': np.zeros_like(self.w)}}
         
@@ -229,7 +218,7 @@ class LinearLayer(Layer):
         
         #Return output of layer
         #y = w@x
-        y = np.einsum('od,bdn->bon',self.params['w']['w'],x)
+        y = np.einsum('od,bdn->bon',self.params['w']['w'],x, optimize= True)
         return y
         
     def backward(self,grad):
@@ -243,11 +232,13 @@ class LinearLayer(Layer):
 
         #Compute gradient (average over B batches) of loss wrt weight w: 
         #dL/dw = (1/B)*sum_b^B (grad_b@x_b^T)
-        self.params['w']['d'] = np.einsum('bon,bdn->od',grad,self.x)/b
+        self.params['w']['d'] = np.einsum('bon,bdn->od',grad,self.x, optimize= True)/b
 
         #Return gradient of loss wrt input of layer
         #dL/dw = w@grad.T
-        return np.einsum('od,bon->bdn',self.params['w']['w'],grad)
+        
+        
+        return np.einsum('od,bon->bdn',self.params['w']['w'],grad, optimize= True)
     
 
 class Relu(Layer):
@@ -312,6 +303,7 @@ class EmbedPosition(Layer):
         """
 
         #We assume that n < n_max
+        
         n = X.shape[-1]
         z_0 = self.embed.forward(X) + self.params['Wp']['w'][:,:n]
         return z_0
@@ -336,6 +328,7 @@ class EmbedPosition(Layer):
         self.embed.backward(grad)
 
         #This is always the final layer, so we return None
+
         return None
     
     def step_gd(self,step_size):
@@ -347,6 +340,15 @@ class EmbedPosition(Layer):
         #which calls the step_gd() of the base class
         #and does gd for the paramters in the params dict
         super().step_gd(step_size)
+    def step_adam(self,iter, alpha = 0.01):
+
+        #We need to call the step_gd method of the linear layer
+        self.embed.step_adam(iter, alpha)
+
+        #And since we override step_gd(), we use super 
+        #which calls the step_gd() of the base class
+        #and does gd for the paramters in the params dict
+        super().step_adam(iter, alpha)
 
 
 
@@ -386,7 +388,7 @@ class FeedForward(Layer):
         """
 
         self.x = x
-
+        z = x + self.l2.forward(self.activation.forward(self.l1.forward(x)))
         return x + self.l2.forward(self.activation.forward(self.l1.forward(x)))
     
     def backward(self,grad):
@@ -402,7 +404,6 @@ class FeedForward(Layer):
         #We use backward pass of the linear layers and activation.
         #Recall that the backward pass reverse the order of the layers.
         grad_feed_forward = self.l1.backward(self.activation.backward(self.l2.backward(grad)))
-
         #Since forward pass is x + W2.T@Relu(W1@x)
         return grad + grad_feed_forward
 
@@ -412,3 +413,12 @@ class FeedForward(Layer):
         #Call the step_gd method of the linear layers
         self.l1.step_gd(step_size)
         self.l2.step_gd(step_size)
+    def step_adam(self,iter, alpha = 0.01):
+
+        #We need to call the step_gd method of the linear layer
+        self.l1.step_adam(iter, alpha)
+        self.l2.step_adam(iter, alpha)
+
+        #And since we override step_gd(), we use super 
+        #which calls the step_gd() of the base class
+        #and does gd for the paramters in the params dict
