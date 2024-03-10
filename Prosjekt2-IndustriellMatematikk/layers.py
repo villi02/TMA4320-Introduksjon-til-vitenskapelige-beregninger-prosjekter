@@ -144,7 +144,7 @@ class Softmax(Layer):
         Your code here
         """
         S = self.P/(self.Q*self.Q+self.epsilon) 
-        return  grad*self.x- np.sum(grad*S, axis = 1)*self.P        
+        return  grad*self.x- np.sum(grad*S,axis = 1, keepdims = True)*self.P        
 
 
 
