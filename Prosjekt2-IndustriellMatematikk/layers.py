@@ -107,7 +107,6 @@ class Attention(Layer):
         Your code here  
         """
         grad_OV = np.einsum('ab,bc,kcd -> kad',np.transpose(self.params["W_V"]['w']),self.params["W_O"]['w'], grad, optimize= True )
-        sotfmaxfuckery = np.einsum('abc, dce ->dbe',np.transpose(self.x,(0,2,1)),grad_OV, optimize= True)
         grad_S = self.softmax.backward(np.einsum('abc, dce ->dbe',np.transpose(self.x,(0,2,1)),grad_OV, optimize= True))
 
         del_L = grad + np.einsum('abc, kce ->abe', grad_OV, np.transpose(self.A,(0,2,1)), optimize= True)
