@@ -107,8 +107,6 @@ class Attention(Layer):
             },
         }
 
-        self.softmax = Softmax()
-
         return
 
     def forward(self, x):
@@ -119,7 +117,8 @@ class Attention(Layer):
         n = x.shape[2]
         self.b = x.shape[0]
         self.x = x
-        self.x_transpose = np.transpose(x, (0, 2, 1))
+
+        self.softmax = Softmax()
         self.D = np.zeros((n, n))
         i1, i2 = np.tril_indices(n, -1)
         self.D[i1, i2] = -np.inf  # creates D matrix
