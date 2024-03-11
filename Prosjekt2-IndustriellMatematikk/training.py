@@ -4,32 +4,25 @@ from neural_network import NeuralNetwork
 from utils import onehot
 
 def algorithm_4(x, y, n_iter, alpha, m, neuralnet):
-    n_samples = x.shape[0]
-    batch_size = y.shape[1]
-    n_batches = n_samples // batch_size
+    n_batches = x.shape[0]  # Number of batches in the dataset
+    samples_per_batch = x.shape[1]  # Number of samples per batch
     
     EpochLosses = []  # To store average loss per epoch
+    
     for epoch in range(n_iter):
-        # Shuffle data at the beginning of each epoch
-        indices = np.arange(n_samples)
-        np.random.shuffle(indices)
-        x_shuffled = x[indices]
-        y_shuffled = y[indices]
+        total_loss = 0  # Accumulate loss over all batches for the current epoch
         
-        total_loss = 0  # Accumulate loss over batches for the current epoch
         for i in range(n_batches):
-            start_idx = i * batch_size
-            end_idx = start_idx + batch_size
-            X_batch = onehot(x_shuffled[start_idx:end_idx], m)
-            Y_batch = y_shuffled[start_idx:end_idx]
+            X_batch = onehot(x[i], m)  # Onehot encode the current batch of x
+            Y_batch = y[i]  # Corresponding y batch
             
             Z = neuralnet.forward(X_batch)
-            batch_loss = neuralnet.loss.forward(Z, Y_batch)
+            batch_loss = neuralnet.loss.forward(Z, Y_batch[:, -5:])  # Assuming CrossEntropy is the second last layer
             total_loss += batch_loss  # Accumulate loss
             
-            dLdz = neuralnet.loss.backward()
-            neuralnet.backward(dLdz)
-            neuralnet.step_adam(epoch + 1, alpha)  # epoch + 1 to avoid division by zero in Adam
+            dLdz = neuralnet.loss.backward()  # Compute gradients for the loss
+            neuralnet.backward(dLdz)  # Backpropagate through the network
+            neuralnet.step_adam(epoch + 1, alpha)  # Apply Adam optimizer
         
         avg_loss = total_loss / n_batches  # Calculate average loss for the epoch
         EpochLosses.append(avg_loss)  # Store the average loss
@@ -37,7 +30,6 @@ def algorithm_4(x, y, n_iter, alpha, m, neuralnet):
         print(f'Epoch {epoch+1}/{n_iter}, Average Loss: {avg_loss}')  # Print average loss for the epoch
     
     return EpochLosses
-
 def algorithm_4_sort(x, y, n_iter, alpha, m, neuralnet):
     batch_size, n_samples, _ = x.shape
     
