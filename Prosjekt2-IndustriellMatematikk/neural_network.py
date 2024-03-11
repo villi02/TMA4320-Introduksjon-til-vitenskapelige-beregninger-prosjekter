@@ -10,6 +10,7 @@ class NeuralNetwork():
     def __init__(self,layers):
         #layers is a list where each element is of the Layer class
         self.layers = layers
+        self.loss = CrossEntropy()
     
     def forward(self,x):
         #Recursively perform forward pass from initial input x

@@ -79,8 +79,6 @@ class Attention(Layer):
                        "W_K": {'w': W_K.w, 'd': np.zeros_like(W_K.w), 'V': np.zeros_like(W_K.w), 'M': np.zeros_like(W_K.w)},
                        "W_Q": {'w': W_Q.w, 'd': np.zeros_like(W_Q.w), 'V': np.zeros_like(W_Q.w), 'M': np.zeros_like(W_Q.w)}}
 
-        self.softmax = Softmax()
-        
         return
 
         
@@ -94,9 +92,11 @@ class Attention(Layer):
         n = x.shape[2]
         self.b = x.shape[0]
         self.x = x
+        
+        self.softmax = Softmax()
         self.D = np.zeros((n, n))
         i1,i2 = np.tril_indices(n,-1)
-        self.D[i1,i2] = -np.inf #creates D matrix
+        self.D[i1,i2] = -np.inf  #creates D matrix
 
         self.A = self.softmax.forward(np.einsum('aij,jn,nk,bkt->bit', np.transpose(x,(0,2,1)), np.transpose(self.params["W_Q"]['w']), self.params["W_K"]['w'], x, optimize=True) + self.D)
         return  x + np.einsum('in, nj, ajk,bkt->aik',np.transpose(self.params["W_O"]['w']), self.params["W_V"]['w'], x, self.A, optimize= True)  
