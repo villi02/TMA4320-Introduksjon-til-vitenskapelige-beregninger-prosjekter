@@ -125,7 +125,7 @@ class Attention(Layer):
 
         self.A = self.softmax.forward(
             np.einsum(
-                "bij,jn,nk,bkt->bit",
+                "bij, jn, nk, bkt->bit",
                 self.x_transpose,
                 np.transpose(self.params["W_Q"]["w"]),
                 self.params["W_K"]["w"],
@@ -135,7 +135,7 @@ class Attention(Layer):
             + self.D
         )
         return self.x + np.einsum(
-            "in, nj, ajk,akt->aik",
+            "in, nj, ajk ,akt -> ait", #Bytta k på slutten med t
             np.transpose(self.params["W_O"]["w"]),
             self.params["W_V"]["w"],
             self.x,
@@ -151,7 +151,7 @@ class Attention(Layer):
         # Useful calculations
 
         grad_OV = np.einsum(
-            "ab,bc,kcd -> kad",
+            "ab, bc, kcd -> kad",
             np.transpose(self.params["W_V"]["w"]),
             self.params["W_O"]["w"],
             grad,
@@ -171,7 +171,7 @@ class Attention(Layer):
         self.A_transpose = np.transpose(self.A, (0, 2, 1))
 
         del_L = grad + np.einsum(
-            "abc, ace ->abe", grad_OV, self.A_transpose, optimize=True
+            "abc, ace -> abe", grad_OV, self.A_transpose, optimize=True
         )
         del_L += np.einsum(
             "ab,bc, kcd, lde -> lae",
@@ -182,7 +182,7 @@ class Attention(Layer):
             optimize=True,
         )
         del_L += np.einsum(
-            "ab,bc, lcd, lde -> lae",
+            "ab, bc, lcd, lde -> lae",
             np.transpose(self.params["W_Q"]["w"]),
             self.params["W_K"]["w"],
             self.x,
