@@ -286,7 +286,7 @@ class CrossEntropy(Layer):
         self.Y_hat = x[:, :, -y.shape[-1] :]  # husk slice
         self.Y = onehot(y, m)
         P = np.sum((self.Y_hat * self.Y), axis=1)
-        Q = -np.log(P + self.epsilon)
+        Q = -np.log10(P + self.epsilon)
         return np.mean(Q)
 
     def backward(self):

@@ -75,7 +75,7 @@ def algorithm_4_add(x, y, n_iter, alpha, m, r, neuralnet):
         for k in range(batch_size):
             X_batch = onehot(x[k], m)
             Z = neuralnet.forward(X_batch)
-            batch_loss = neuralnet.loss.forward_add(Z, y[k][:,-r+1:])
+            batch_loss = neuralnet.loss.forward_add(Z, y[k][:,-(r+1):])
             total_loss.append(batch_loss)
             dLdz = neuralnet.loss.backward()
             neuralnet.backward(dLdz)
@@ -90,14 +90,13 @@ def algorithm_4_add(x, y, n_iter, alpha, m, r, neuralnet):
     return EpochLosses
 
 
-def sorting(neuralnet, x, y, m):
-    for i in range(5):
+def sorting(neuralnet, x, y, m,r):
+    for i in range(r):
         X = onehot(x, m)
         Z = neuralnet.forward(X)
-        print(Z)
         z_hat =  (np.argmax(Z, axis=1)[:,-1]).reshape(-1,1)
         x = np.concatenate((x, z_hat), axis=1)
-    y_hat = x[:,-5:]        
+    y_hat = x[:,-r:]        
     amount = 0
     for i in range(y.shape[0]):
         y[i] = y[i].astype(int)
