@@ -76,34 +76,34 @@ class Attention(Layer):
         Your code here
         """
 
-        self.W_O = LinearLayer(d, k)
-        self.W_V = LinearLayer(d, k)
-        W_K = LinearLayer(d, k)
-        W_Q = LinearLayer(d, k)
+        self.W_O = np.random.randn(k, d) * 0.1
+        self.W_V = np.random.randn(k, d) * 0.1
+        W_K = np.random.randn(k, d) * 0.1
+        W_Q = np.random.randn(k, d) * 0.1
         self.params = {
             "W_O": {
-                "w": self.W_O.w,
-                "d": np.zeros_like(self.W_O.w),
-                "V": np.zeros_like(self.W_O.w),
-                "M": np.zeros_like(self.W_O.w),
+                "w": self.W_O,
+                "d": np.zeros_like(self.W_O),
+                "V": np.zeros_like(self.W_O),
+                "M": np.zeros_like(self.W_O),
             },
             "W_V": {
-                "w": self.W_V.w,
-                "d": np.zeros_like(self.W_V.w),
-                "V": np.zeros_like(self.W_V.w),
-                "M": np.zeros_like(self.W_V.w),
+                "w": self.W_V,
+                "d": np.zeros_like(self.W_V),
+                "V": np.zeros_like(self.W_V),
+                "M": np.zeros_like(self.W_V),
             },
             "W_K": {
-                "w": W_K.w,
-                "d": np.zeros_like(W_K.w),
-                "V": np.zeros_like(W_K.w),
-                "M": np.zeros_like(W_K.w),
+                "w": W_K,
+                "d": np.zeros_like(W_K),
+                "V": np.zeros_like(W_K),
+                "M": np.zeros_like(W_K),
             },
             "W_Q": {
-                "w": W_Q.w,
-                "d": np.zeros_like(W_Q.w),
-                "V": np.zeros_like(W_Q.w),
-                "M": np.zeros_like(W_Q.w),
+                "w": W_Q,
+                "d": np.zeros_like(W_Q),
+                "V": np.zeros_like(W_Q),
+                "M": np.zeros_like(W_Q),
             },
         }
         self.softmax = Softmax()
@@ -117,15 +117,15 @@ class Attention(Layer):
         n = x.shape[2]
         self.b = x.shape[0]
         self.x = x
-        self.x_transpose = np.transpose(self.x, (0,2,1))
-        
+        self.x_transpose = np.transpose(self.x, (0, 2, 1))
+
         self.D = np.zeros((n, n))
         i1, i2 = np.tril_indices(n, -1)
         self.D[i1, i2] = -np.inf  # creates D matrix
 
         self.A = self.softmax.forward(
             np.einsum(
-                "aij,jn,nk,bkt->bit",
+                "bij,jn,nk,bkt->bit",
                 self.x_transpose,
                 np.transpose(self.params["W_Q"]["w"]),
                 self.params["W_K"]["w"],
@@ -135,7 +135,7 @@ class Attention(Layer):
             + self.D
         )
         return self.x + np.einsum(
-            "in, nj, ajk,bkt->aik",
+            "in, nj, ajk,akt->aik",
             np.transpose(self.params["W_O"]["w"]),
             self.params["W_V"]["w"],
             self.x,
@@ -159,7 +159,7 @@ class Attention(Layer):
         )
         grad_S = self.softmax.backward(
             np.einsum(
-                "abc, dce ->dbe",
+                "abc, ace ->abe",
                 self.x_transpose,
                 grad_OV,
                 optimize=True,
@@ -171,7 +171,7 @@ class Attention(Layer):
         self.A_transpose = np.transpose(self.A, (0, 2, 1))
 
         del_L = grad + np.einsum(
-            "abc, kce ->abe", grad_OV, self.A_transpose, optimize=True
+            "abc, ace ->abe", grad_OV, self.A_transpose, optimize=True
         )
         del_L += np.einsum(
             "ab,bc, kcd, lde -> lae",
@@ -182,7 +182,7 @@ class Attention(Layer):
             optimize=True,
         )
         del_L += np.einsum(
-            "ab,bc, kcd, lde -> lae",
+            "ab,bc, lcd, lde -> lae",
             np.transpose(self.params["W_Q"]["w"]),
             self.params["W_K"]["w"],
             self.x,
@@ -192,7 +192,7 @@ class Attention(Layer):
 
         self.params["W_O"]["d"] = (
             np.einsum(
-                "ab, kbc, lcd, mde -> ae",
+                "ab, kbc, kcd, kde -> ae",
                 self.params["W_V"]["w"],
                 self.x,
                 self.A,
@@ -203,7 +203,7 @@ class Attention(Layer):
         )
         self.params["W_V"]["d"] = (
             np.einsum(
-                "ab, kbc, lcd, mde -> ae",
+                "ab, kbc, kcd, kde -> ae",
                 self.params["W_O"]["w"],
                 grad,
                 self.A_transpose,
@@ -214,7 +214,7 @@ class Attention(Layer):
         )
         self.params["W_K"]["d"] = (
             np.einsum(
-                "ab, kbc, lcd, mde -> ae",
+                "ab, kbc, kcd, kde -> ae",
                 self.params["W_Q"]["w"],
                 self.x,
                 grad_S,
@@ -225,7 +225,7 @@ class Attention(Layer):
         )
         self.params["W_Q"]["d"] = (
             np.einsum(
-                "ab, kbc, lcd, mde -> ae",
+                "ab, kbc, kcd, kde -> ae",
                 self.params["W_K"]["w"],
                 self.x,
                 grad_S_T,
