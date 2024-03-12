@@ -67,12 +67,17 @@ def algorithm_4_sort(x, y, n_iter, alpha, m, neuralnet):
 
 
 def sorting(neuralnet, x, y, m):
-    X = onehot(x, m)
-    Z = neuralnet.forward(X)
-    z_hat = np.argmax(Z, axis=1)
+    for i in range(5):
+        X = onehot(x, m)
+        Z = neuralnet.forward(X)
+        z_hat =  np.argmax(Z, axis=1)[i][4+i]
+        new_col = np.ones((250, 1)) * z_hat
+        x = np.concatenate((x, new_col), axis=1)
+    y_hat = x[:,-5:]        
+
     amount = 0
     for i in range(y.shape[0]):
         y[i] = y[i].astype(int)
-        if np.array_equal(y[i], z_hat[i][::-1]):
+        if np.array_equal(y[i], y_hat[i][::-1]):
             amount += 1
-    return amount / y.shape[0]
+    return amount / y.shape[0], y_hat
