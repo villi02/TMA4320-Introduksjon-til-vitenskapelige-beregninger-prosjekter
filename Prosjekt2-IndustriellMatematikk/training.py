@@ -4,7 +4,7 @@ from neural_network import NeuralNetwork
 from utils import onehot
 
 
-def algorithm_4(x, y, n_iter, alpha, m, neuralnet):
+def algorithm_4(x, y, n_iter, alpha, m, neuralnet, r):
     n_batches = x.shape[0]  # Number of batches in the dataset
     samples_per_batch = x.shape[1]  # Number of samples per batch
 
@@ -19,7 +19,7 @@ def algorithm_4(x, y, n_iter, alpha, m, neuralnet):
 
             Z = neuralnet.forward(X_batch)
             batch_loss = neuralnet.loss.forward(
-                Z, Y_batch[:, 4:9]
+                Z, Y_batch[:, -r:]
             )  # Assuming CrossEntropy is the second last layer
             total_loss += batch_loss  # Accumulate loss
 
