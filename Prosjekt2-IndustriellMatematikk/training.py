@@ -41,7 +41,7 @@ def algorithm_4_sort(x, y, n_iter, alpha, m, neuralnet):
     batch_size, n_samples, _ = x.shape
 
     EpochLosses = []  # To store average loss per epoch
-    for epoch in range(1, n_iter):
+    for epoch in range(1, n_iter+1):
         # Shuffle data at the beginning of each epoch
         total_loss = []
         for k in range(batch_size):
@@ -69,7 +69,7 @@ def algorithm_4_add(x, y, n_iter, alpha, m, r, neuralnet):
     batch_size, n_samples, _ = x.shape
     
     EpochLosses = []  # To store average loss per epoch
-    for i in range(1,n_iter):
+    for i in range(1,n_iter+1):
         # Shuffle data at the beginning of each epoch
         total_loss = []
         for k in range(batch_size):
@@ -94,7 +94,6 @@ def sorting(neuralnet, x, y, m,r):
     for i in range(r):
         X = onehot(x, m)
         Z = neuralnet.forward(X)
-
         z_hat =  (np.argmax(Z, axis=1)[:,-1]).reshape(-1,1)
         x = np.concatenate((x, z_hat), axis=1)
     y_hat = x[:,-r:]        
