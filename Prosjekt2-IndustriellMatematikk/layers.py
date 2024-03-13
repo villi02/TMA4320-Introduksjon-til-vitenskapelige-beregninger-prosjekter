@@ -136,7 +136,7 @@ class Attention(Layer):
         )
 
         return self.x + np.einsum(
-            "in, nj, ajk, akt -> ait",
+            "in, nj, ajk ,akt -> ait", #Bytta k på slutten med t
             np.transpose(self.params["W_O"]["w"]),
             self.params["W_V"]["w"],
             self.x,
@@ -443,15 +443,8 @@ class EmbedPosition(Layer):
         b = grad.shape[0]
 
         # Compute gradient (average over B batches) of loss wrt positional embedding w:
-        n = grad.shape[
-            2
-        ]  # Assuming grad's last dimension corresponds to sequence length
-        self.params["Wp"]["d"] = np.zeros_like(
-            self.w
-        )  # Reset gradients to zero of full embedding size
-        self.params["Wp"]["d"][:, :n] += (
-            np.sum(grad, axis=0) / b
-        )  # Accumulate gradients only for used sequence lengths
+        self.params["Wp"]["d"] = np.zeros_like(self.w)
+        self.params["Wp"]["d"] += np.sum(grad, axis=0) / b
 
         # Use backwards pass of the linear layer
         self.embed.backward(grad)
