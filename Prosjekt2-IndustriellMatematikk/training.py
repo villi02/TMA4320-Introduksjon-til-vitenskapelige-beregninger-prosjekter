@@ -66,7 +66,7 @@ def algorithm_4_addition_finished(x, y, n_iter, alpha, m, neuralnet, r):
     return EpochLosses
 
 
-def algorithm_4_sort(x, y, n_iter, alpha, m, neuralnet):
+def algorithm_4_sort(x, y, n_iter, alpha, m, neuralnet, r):
     batch_size, n_samples, _ = x.shape
 
     EpochLosses = []  # To store average loss per epoch
@@ -76,12 +76,11 @@ def algorithm_4_sort(x, y, n_iter, alpha, m, neuralnet):
         for k in range(batch_size):
             X_batch = onehot(x[k], m)
             Z = neuralnet.forward(X_batch)
-            batch_loss = neuralnet.loss.forward(Z, y[k][:, 4:9])
+            batch_loss = neuralnet.loss.forward(Z, y[k][:, -r:])
             total_loss.append(batch_loss)
             dLdz = neuralnet.loss.backward()
             neuralnet.backward(dLdz)
-            neuralnet.step_adam(
-                n_iter, alpha
+            neuralnet.step_adam( n_iter, alpha
             )  # epoch + 1 to avoid division by zero in Adam
             # print(f"loss for batch {epoch} is {batch_loss}")
 
@@ -98,9 +97,8 @@ def algorithm_4_sort(x, y, n_iter, alpha, m, neuralnet):
 def algorithm_4_add(x, y, n_iter, alpha, m, r, neuralnet):
     batch_size, n_samples, _ = x.shape
 
-    EpochLosses = []  # To store average loss per epoch
+    loss = []  # liste for å plotte senere
     for i in range(1, n_iter):
-        # Shuffle data at the beginning of each epoch
         total_loss = []
         for k in range(batch_size):
             X_batch = onehot(x[k], m)
@@ -115,13 +113,11 @@ def algorithm_4_add(x, y, n_iter, alpha, m, r, neuralnet):
             # print(f'loss for batch {k} and iteration {i} is {batch_loss}')
 
         avg_loss = np.mean(total_loss)  # Calculate average loss for the epoch
-        EpochLosses.append(avg_loss)  # Store the average loss
+        loss.append(avg_loss)  # Store the average loss
+        if (i) % 10 == 0:
+            print(f"iterasjon {i}/{n_iter}, Average Loss: {avg_loss}")  # printer per 
 
-        print(
-            f"Epoch {i}/{n_iter}, Average Loss: {avg_loss}"
-        )  # Print average loss for the epoch
-
-    return EpochLosses
+    return loss
 
 
 def accuracy_sorting(neuralnet, x, y, m, r):
@@ -143,10 +139,10 @@ def accuracy_addition(neuralnet, x, y, m, r):
     for i in range(r+1): #should possibly be r+1
         X = onehot(x, m)
         Z = neuralnet.forward(X)
-
         z_hat = (np.argmax(Z, axis=1)[:, -1]).reshape(-1, 1)
         x = np.concatenate((x, z_hat), axis=1)
     y_hat = x[:, -(r + 1) :]
+    y_hat = [row[::-1] for row in y_hat]
     amount = 0
     for i in range(y.shape[0]):
         if np.array_equal(y[i], y_hat[i]):
