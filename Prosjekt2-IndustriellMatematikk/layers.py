@@ -136,7 +136,7 @@ class Attention(Layer):
         )
 
         return self.x + np.einsum(
-            "in, nj, ajk ,akt -> ait", #Bytta k på slutten med t
+            "in, nj, ajk, akt -> ait",
             np.transpose(self.params["W_O"]["w"]),
             self.params["W_V"]["w"],
             self.x,
