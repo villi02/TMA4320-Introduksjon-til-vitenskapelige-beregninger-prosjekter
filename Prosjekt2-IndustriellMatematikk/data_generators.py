@@ -225,3 +225,99 @@ def text_to_training_data(n_max, text_string,num_batches=64,batch_size=100):
     data = {'x_train':batches_x,'y_train':batches_y}
 
     return data, idx_to_text_dict, text_to_idx_dict, m
+
+
+
+
+def get_train_test_addition_2(n_digit,samples_per_batch = 1000,n_batches_train = 3, n_batches_test = 1):
+
+    """
+    Generates a dataset for addition (a + b = c) of n_digit numbers.
+    The dataset is split into a training and test set.
+
+    Note! The order of the of the digits in c is reversed.
+    This is done, since it (for some reason) makes the addition easier to learn for the.
+
+    Returns a dictionary data with keys 'x_train', 'y_train', 'x_test', 'y_test' with the following shapes:
+            - x_train: (n_batches_train,samples_per_batch,n_digit*3)
+            - y_train: (n_batches_train,samples_per_batch,n_digit+1)
+            - x_test: (n_batches_test,samples_per_batch,n_digit*2)
+            - y_test: (n_batches_test,samples_per_batch,n_digit+1)
+
+    Example:
+    n_digit = 2
+    a = [3,4]
+    b = [4,1]
+    c = [0,7,5]
+    
+    then we get
+
+    x = cat(a,b,c_reversed[:-1]) = [3,4, 4,1, 5,7]
+    y = c_reversed =  [5,7,0]
+
+
+    This is based on the code from the minGPT project by Karpathy et al.
+    found in https://github.com/karpathy/minGPT/tree/master/projects/adder
+    """
+    
+    # total number of possible addition problems with ndigit numbers
+    num = (10**n_digit)**2
+
+    #return error if we don't have enough samples to fill the batches
+    if (n_batches_train+n_batches_test)*samples_per_batch > num:
+        return ValueError('Not enough samples for training and testing')
+
+    #shuffle the indices
+    perm = np.random.permutation(num)
+    nd = 10**n_digit
+
+    def get_xy(n_digit,idx):
+        idx = perm[idx]
+        a = idx // nd
+        b = idx % nd
+
+        c = a + b
+        # encode the digits of a, b, c into strings
+        astr = f'%0{n_digit}d' % a
+        bstr = f'%0{n_digit}d' % b
+        cstr = (f'%0{n_digit+1}d' % c)[::-1] # reverse c to make addition easier
+        render = astr + bstr + cstr
+        dix = [int(s) for s in render]
+
+        x = dix[:-1]
+        y = [int(s) for s in cstr]
+        return x,y
+    
+    x_train = []
+    y_train = []
+    x_test= []
+    y_test = []
+
+    #collecting x,y pairs for training
+    for i in perm[:n_batches_train*samples_per_batch]:
+        x,y = get_xy(n_digit,i)
+        x_train.append(x)
+        y_train.append(y)
+
+    #collecting x,y pairs for testing
+    for i in perm[n_batches_train*samples_per_batch : (n_batches_train+n_batches_test)*samples_per_batch]:
+        x,y = get_xy(n_digit,i)
+        x_test.append(x)
+        y_test.append(y)
+
+    x_train = np.reshape(np.stack(x_train),(n_batches_train,samples_per_batch,n_digit*3))
+    y_train = np.reshape(np.stack(y_train),(n_batches_train,samples_per_batch,n_digit + 1))
+    x_test = np.reshape(np.stack(x_test),(n_batches_test,samples_per_batch,n_digit*3))
+    y_test = np.reshape(np.stack(y_test),(n_batches_test,samples_per_batch,n_digit + 1))
+
+
+    data = {}
+
+    data['x_train'] = x_train
+    data['y_train'] = y_train
+
+    #we only select a and b from x_test
+    data['x_test'] = x_test[:,:,:n_digit*2]
+    #and we only select c from y_test (and reverse it)
+    data['y_test'] = y_test[:,:,::-1]
+    return data

@@ -174,7 +174,7 @@ class Attention(Layer):
             "abc, ace -> abe", grad_OV, self.A_transpose, optimize=True
         )
         del_L += np.einsum(
-            "ab,bc, kcd, lde -> lae",
+            "ab,bc, lcd, lde -> lae",
             np.transpose(self.params["W_K"]["w"]),
             self.params["W_Q"]["w"],
             self.x,
@@ -442,8 +442,8 @@ class EmbedPosition(Layer):
         b = grad.shape[0]
 
         # Compute gradient (average over B batches) of loss wrt positional embedding w:
-        print(self.w.shape)
-        print(grad.shape)
+        # print(self.w.shape)
+        # print(grad.shape)
         self.params["Wp"]["d"] = np.zeros_like(self.w)
         self.params["Wp"]["d"] += np.sum(grad, axis=0) / b
 

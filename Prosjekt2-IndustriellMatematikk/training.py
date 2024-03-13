@@ -123,7 +123,7 @@ def algorithm_4_add(x, y, n_iter, alpha, m, r, neuralnet):
     return EpochLosses
 
 
-def sorting(neuralnet, x, y, m, r):
+def accuracy_sorting(neuralnet, x, y, m, r):
     for i in range(r):
         X = onehot(x, m)
         Z = neuralnet.forward(X)
@@ -138,13 +138,14 @@ def sorting(neuralnet, x, y, m, r):
     return amount / y.shape[0], y_hat
 
 def accuracy_addition(neuralnet, x, y, m, r):
-    for i in range(r):
+    for i in range(r+1): #should possibly be r+1
         X = onehot(x, m)
         Z = neuralnet.forward(X)
 
         z_hat = (np.argmax(Z, axis=1)[:, -1]).reshape(-1, 1)
         x = np.concatenate((x, z_hat), axis=1)
-    y_hat = x[:, -r:]
+    y_hat = x[:, -(r+1):]
+    y_hat = [row[::-1] for row in y_hat]
     amount = 0
     for i in range(y.shape[0]):
         if np.array_equal(y[i], y_hat[i]):
