@@ -34,6 +34,7 @@ def algorithm_4_sort_finished(x, y, n_iter, alpha, m, neuralnet, r):
 
     return EpochLosses
 
+
 def algorithm_4_addition_finished(x, y, n_iter, alpha, m, neuralnet, r):
     n_batches = x.shape[0]  # Number of batches in the dataset
 
@@ -49,7 +50,7 @@ def algorithm_4_addition_finished(x, y, n_iter, alpha, m, neuralnet, r):
             Z = neuralnet.forward(X_batch)
             # Adjust the slicing of Z to only include the predictions for the sorted sequence
             # Assuming the last 'r' elements of Z correspond to the sorted sequence
-            batch_loss = neuralnet.loss.forward(Z, Y_batch[:, -(r+1):])
+            batch_loss = neuralnet.loss.forward(Z, Y_batch[:, -(r + 1) :])
             total_loss += batch_loss  # Accumulate loss
 
             dLdz = neuralnet.loss.backward()  # Compute gradients for the loss
@@ -104,7 +105,7 @@ def algorithm_4_add(x, y, n_iter, alpha, m, r, neuralnet):
         for k in range(batch_size):
             X_batch = onehot(x[k], m)
             Z = neuralnet.forward(X_batch)
-            batch_loss = neuralnet.loss.forward(Z, y[k][:, -(r + 1):])
+            batch_loss = neuralnet.loss.forward(Z, y[k][:, -(r + 1) :])
             total_loss.append(batch_loss)
             dLdz = neuralnet.loss.backward()
             neuralnet.backward(dLdz)
@@ -137,6 +138,7 @@ def accuracy_sorting(neuralnet, x, y, m, r):
             amount += 1
     return amount / y.shape[0], y_hat
 
+
 def accuracy_addition(neuralnet, x, y, m, r):
     for i in range(r+1): #should possibly be r+1
         X = onehot(x, m)
@@ -144,8 +146,7 @@ def accuracy_addition(neuralnet, x, y, m, r):
 
         z_hat = (np.argmax(Z, axis=1)[:, -1]).reshape(-1, 1)
         x = np.concatenate((x, z_hat), axis=1)
-    y_hat = x[:, -(r+1):]
-    y_hat = [row[::-1] for row in y_hat]
+    y_hat = x[:, -(r + 1) :]
     amount = 0
     for i in range(y.shape[0]):
         if np.array_equal(y[i], y_hat[i]):
