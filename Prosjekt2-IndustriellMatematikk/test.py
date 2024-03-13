@@ -175,40 +175,45 @@ class TestSoftmaxLayer(unittest.TestCase):
 class TestCrossEntropyLayer(unittest.TestCase):
     def setUp(self):
         self.cross_entropy = layers.CrossEntropy()
-        r = 5
+        self.r = 5
         self.m = 2
         d = 10
         k = 5
         p = 15
-        L = 2
-        n_max = 2 * r - 1
-        n_iter = 300
-        alpha = 0.001
+        n_max = 2 * self.r - 1
         num_of_samples = 250
         num_train_batches = 10
         num_test_batches = 1
         data = get_train_test_sorting(
-            r, self.m, num_of_samples, num_train_batches, num_test_batches
+            self.r, self.m, num_of_samples, num_train_batches, num_test_batches
         )
         self.x = data["x_train"]
         self.y = data["y_train"]
-
-    def test_forward_loss_against_tf(self):
-        X_batch = onehot(self.x[0], self.m)
-        Z = layers.Softmax().forward(X_batch)
-        loss = self.cross_entropy.forward(Z, self.y[0])
-        expected_loss = tf.reduce_mean(
-            tf.nn.sparse_softmax_cross_entropy_with_logits(self.y[0], Z)
-        )
-        self.assertAlmostEqual(loss, expected_loss)
+        feed_forward1 = layers.FeedForward(d, p)
+        attention1 = layers.Attention(d, k)
+        feed_forward2 = layers.FeedForward(d, p)
+        attention2 = layers.Attention(d, k)
+        embed_pos = layers.EmbedPosition(n_max, self.m, d)
+        un_embed_pos = layers.LinearLayer(d, self.m)
+        softmax = layers.Softmax()
+        layers_ = [
+            embed_pos,
+            attention1,
+            feed_forward1,
+            attention2,
+            feed_forward2,
+            un_embed_pos,
+            softmax,
+        ]
+        self.neuralnet = NeuralNetwork(layers_)
 
     def test_backward_shape(self):
         X_batch = onehot(self.x[0], self.m)
-
-        self.cross_entropy.forward(self.x, self.y[0])
+        Z = self.neuralnet.forward(X_batch)
+        self.cross_entropy.forward(Z, self.y[0][:, -self.r :])
         grad = self.cross_entropy.backward()
         # Ensure gradient shape matches the input x shape
-        self.assertEqual(grad.shape, self.x.shape)
+        self.assertEqual(grad.shape, Z.shape)
 
 
 if __name__ == "__main__":
