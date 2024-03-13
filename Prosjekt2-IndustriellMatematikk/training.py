@@ -20,8 +20,8 @@ def algorithm_4_sort(x, y, n_iter, alpha, m, neuralnet, r):
         avg_loss = np.mean(total_loss)  # regner ut gjennomsnittlig loss
         loss.append(avg_loss)  # lagrer gjennomsnittlig loss
 
-        if (i) % 10 == 0:
-            print(f"iterasjon {i}/{n_iter}, gjennomsnittlig Loss: {avg_loss}")  # printer per 10. iterasjoner
+        if (i) % 30 == 0:
+            print(f"iterasjon {i}/{n_iter}, gjennomsnittlig Loss: {avg_loss}")  # printer per 30. iterasjoner
 
     return loss
 
@@ -31,7 +31,10 @@ def algorithm_4_add(x, y, n_iter, alpha, m, r, neuralnet):
     batch_size, n_samples, _ = x.shape
 
     loss = []  # liste for å plotte senere
-    for i in range(1, n_iter+1): #antall iterasjoner
+    i = 0
+    avg_loss = 1
+    while 0.01 < avg_loss: #antall iterasjoner
+        i += 1
         total_loss = []
         for k in range(batch_size): #antall batches
             X_batch = onehot(x[k], m)
@@ -46,8 +49,10 @@ def algorithm_4_add(x, y, n_iter, alpha, m, r, neuralnet):
 
         avg_loss = np.mean(total_loss)  # regner ut gjennomsnittlig loss
         loss.append(avg_loss)  #lagrer gjennomsnittlig loss
-        if (i) % 10 == 0:
-            print(f"iterasjon {i}/{n_iter}, gjennomsnittlig Loss: {avg_loss}")  # printer per 10. iterasjoner
+        if (i) % 30 == 0:
+            print(f"iterasjon {i}, gjennomsnittlig Loss: {avg_loss}")  # printer per 30. iterasjoner
+
+    print(f'loss etter {i} iterasjoner er {avg_loss}')
 
     return loss
 
