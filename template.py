@@ -31,3 +31,20 @@ def function_name(arg1, arg2) -> type:
 
 # Example with why
 # Changed the function to use vectorization instead of for loop in 2 a), the original method was too slow
+
+
+## How to structure a branch
+
+# [name of owner]-[task number or method being worked on]
+
+# Example
+
+# William-2a
+
+## How to structure a pull request
+
+# [task number or method being worked on] [what was done]
+
+# Example
+
+# 2a Added new function to calculate the sum of two numbers
