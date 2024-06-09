@@ -3,6 +3,8 @@
 
 Welcome to the repository containing three distinct projects focusing on different domains of science and engineering. Each project is self-contained and addresses unique research questions and methodologies. These projects are from spring 2024.
 
+NB! Notebooks are mostly written in Norwegian
+
 ## Projects
 
 ### [1. Biophysics: Simulating Polymers](Prosjekt1-BioFysikk)
