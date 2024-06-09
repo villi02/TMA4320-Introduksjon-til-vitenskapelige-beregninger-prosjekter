@@ -68,10 +68,6 @@ This project models the trajectories of sea debris based on meteorological data,
 **Documentation:**
 - Detailed documentation can be found in the `docs` directory.
 
-## Contributing
-
-Contributions are welcome! Please read the [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines on how to get involved.
-
 ## License
 
 This repository is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
@@ -80,6 +76,6 @@ This repository is licensed under the MIT License. See the [LICENSE](LICENSE) fi
 
 This project is developed by the following authors:
 
-- Author 1: [GitHub Profile](https://github.com/author1)
-- Author 2: [GitHub Profile](https://github.com/author2)
-- Author 3: [GitHub Profile](https://github.com/author3)
+- [Tor Ludvig Haugen](https://github.com/tlhaugen)
+- [Trym Erlend Bakkeland Lervik](https://github.com/EttMolTrym)
+- [Vilhjalmur Arnar Vilhjalmsson](https://github.com/villi02)
