@@ -47,7 +47,7 @@ This project involves the implementation of a Transformer neural network from sc
 **Documentation:**
 - Detailed documentation can be found in the `docs` directory.
 
-### [3. Technical Physics: Modeling Sea Debris Trajectories](./technical-physics-sea-debris)
+### [3. Technical Physics: Modeling Sea Debris Trajectories](Prosjekt3-TekniskFysikk)
 
 **Description:**
 This project models the trajectories of sea debris based on meteorological data, predicting where debris will float.
