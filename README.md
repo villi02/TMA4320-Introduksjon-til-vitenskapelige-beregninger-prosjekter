@@ -26,7 +26,7 @@ This project involves the simulation of polymer chains to study their physical p
 **Documentation:**
 - Detailed documentation can be found in the `docs` directory.
 
-### [2. Industrial Mathematics: Creating a Transformer from Scratch](./industrial-mathematics-transformer)
+### [2. Industrial Mathematics: Creating a Transformer from Scratch](Prosjekt2-IndustriellMatematikk)
 
 **Description:**
 This project involves the implementation of a Transformer neural network from scratch, focusing on the underlying mathematical principles and efficient computation.
