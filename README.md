@@ -5,7 +5,7 @@ Welcome to the repository containing three distinct projects focusing on differe
 
 ## Projects
 
-### [1. Biophysics: Simulating Polymers](./biophysics-polymer-simulation)
+### [1. Biophysics: Simulating Polymers](Prosjekt1-BioFysikk)
 
 **Description:**
 This project involves the simulation of polymer chains to study their physical properties and behavior under various conditions.
