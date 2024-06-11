@@ -8,7 +8,10 @@ NB! Notebooks are mostly written in Norwegian
 
 ### [1. Biophysics: Simulating Polymers using Monte Carlo](Prosjekt1-BioFysikk)
 
-<img src="./images/biophysics_polymer_simulation.png" alt="Polymer Simulation" style="max-width: 20%; height: auto;">
+<p align="center">
+  <img src="./images/biophysics_polymer_simulation.png" alt="Polymer Simulation" style="width: 50%; max-width: 300px; height: auto;">
+</p>
+
 
 **Description:**
 This project involves the simulation of polymer chains to study their physical properties and behavior under various conditions. Also includes a focus on runtime and achieving computation efficiency.
