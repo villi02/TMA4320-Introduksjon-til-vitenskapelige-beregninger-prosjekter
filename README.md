@@ -1,6 +1,4 @@
 # TMA4320 Introduction to Scientific computing - the projects
- Repo containing the projects for the course TMA4320 at NTNU, taken during spring 2024.
-
 Welcome to the repository containing three distinct projects focusing on different domains of science and engineering. Each project is self-contained and addresses unique research questions and methodologies. These projects are from spring 2024.
 
 NB! Notebooks are mostly written in Norwegian
