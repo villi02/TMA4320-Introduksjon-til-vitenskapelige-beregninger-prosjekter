@@ -7,7 +7,7 @@ NB! Notebooks are mostly written in Norwegian
 
 ## Projects
 
-### [1. Biophysics: Simulating Polymers](Prosjekt1-BioFysikk)
+### [1. Biophysics: Simulating Polymers using Monte Carlo](Prosjekt1-BioFysikk)
 
 **Description:**
 This project involves the simulation of polymer chains to study their physical properties and behavior under various conditions.
@@ -18,7 +18,7 @@ This project involves the simulation of polymer chains to study their physical p
 - Visualization tools for simulation results.
 
 **Dependencies:**
-- [List dependencies, e.g., NumPy, SciPy, Matplotlib]
+- NumPy, Matplotlib
 
 **How to Run:**
 1. Navigate to the `biophysics-polymer-simulation` directory.
@@ -39,7 +39,7 @@ This project involves the implementation of a Transformer neural network from sc
 - Example datasets and pre-processing scripts.
 
 **Dependencies:**
-- [List dependencies, e.g., PyTorch, NumPy]
+- NumPy, Matplotlib
 
 **How to Run:**
 1. Navigate to the `industrial-mathematics-transformer` directory.
@@ -58,9 +58,10 @@ This project models the trajectories of sea debris based on meteorological data,
 - Ingestion and processing of meteorological data.
 - Simulation of debris trajectories.
 - Visualization of predicted debris paths.
+- Numerical approximation using Heun's method
 
 **Dependencies:**
-- [List dependencies, e.g., Pandas, NumPy, Matplotlib]
+- NumPy, Matplotlib, scipy, xarray, cartopy
 
 **How to Run:**
 1. Navigate to the `technical-physics-sea-debris` directory.
