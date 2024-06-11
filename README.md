@@ -12,7 +12,6 @@ NB! Notebooks are mostly written in Norwegian
   <img src="./images/biophysics_polymer_simulation.png" alt="Polymer Simulation" style="width: 50%; max-width: 300px; height: auto;">
 </p>
 
-
 **Description:**
 This project involves the simulation of polymer chains to study their physical properties and behavior under various conditions. Also includes a focus on runtime and achieving computation efficiency.
 
@@ -34,7 +33,9 @@ This project involves the simulation of polymer chains to study their physical p
 
 ### [2. Industrial Mathematics: Creating a Transformer from Scratch](Prosjekt2-IndustriellMatematikk)
 
-<img src="./images/industrial_mathematics_transformer.png" alt="Transformer Architecture" style="max-width: 20%; height: auto;">
+<p align="center">
+  <img src="./images/industrial_mathematics_transformer.png" alt="Transformer Architecture" style="width: 50%; max-width: 300px; height: auto;">
+</p>
 
 **Description:**
 This project involves the implementation of a Transformer neural network from scratch, focusing on the underlying mathematical principles and efficient computation.
@@ -57,7 +58,9 @@ This project involves the implementation of a Transformer neural network from sc
 
 ### [3. Technical Physics: Modeling Sea Debris Trajectories](Prosjekt3-TekniskFysikk)
 
-<img src="./images/technical_physics_sea_debris.png" alt="Sea Debris Trajectories" style="max-width: 20%; height: auto;">
+<p align="center">
+  <img src="./images/technical_physics_sea_debris.png" alt="Sea Debris Trajectories" style="width: 50%; max-width: 300px; height: auto;">
+</p>
 
 **Description:**
 This project models the trajectories of sea debris based on meteorological data, predicting where debris will float.
