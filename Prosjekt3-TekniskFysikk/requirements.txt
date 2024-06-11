@@ -1,0 +1,5 @@
+NumPy
+Matplotlib
+scipy
+xarray
+cartopy
