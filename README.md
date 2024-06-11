@@ -10,23 +10,20 @@ NB! Notebooks are mostly written in Norwegian
 ### [1. Biophysics: Simulating Polymers using Monte Carlo](Prosjekt1-BioFysikk)
 
 **Description:**
-This project involves the simulation of polymer chains to study their physical properties and behavior under various conditions.
+This project involves the simulation of polymer chains to study their physical properties and behavior under various conditions. Also includes a focus on runtime and achieving computation efficiency.
 
 **Key Features:**
-- Implementation of polymer simulation algorithms.
-- Analysis of polymer dynamics and structure.
-- Visualization tools for simulation results.
+- Implementation of polymer simulation using Monte Carlo
+- Analysis of polymer dynamics and structure
+- Visualization of simulation results
 
 **Dependencies:**
 - NumPy, Matplotlib
 
 **How to Run:**
-1. Navigate to the `biophysics-polymer-simulation` directory.
+1. Navigate to the `Prosjekt1-BioFysikk` directory.
 2. Install dependencies: `pip install -r requirements.txt`.
-3. Run simulations: `python simulate_polymers.py`.
-
-**Documentation:**
-- Detailed documentation can be found in the `docs` directory.
+3. Run simulations in the `main.ipynb` notebook.
 
 ### [2. Industrial Mathematics: Creating a Transformer from Scratch](Prosjekt2-IndustriellMatematikk)
 
@@ -34,20 +31,17 @@ This project involves the simulation of polymer chains to study their physical p
 This project involves the implementation of a Transformer neural network from scratch, focusing on the underlying mathematical principles and efficient computation.
 
 **Key Features:**
-- Custom implementation of the Transformer architecture.
-- Training and evaluation scripts.
-- Example datasets and pre-processing scripts.
+- Custom implementation of the Transformer architecture
+- Example datasets and pre-processing scripts
+- Mathematical foundation described along the way
 
 **Dependencies:**
 - NumPy, Matplotlib
 
 **How to Run:**
-1. Navigate to the `industrial-mathematics-transformer` directory.
+1. Navigate to the `Prosjekt2-IndustriellMatematikk` directory.
 2. Install dependencies: `pip install -r requirements.txt`.
-3. Train the model: `python train_transformer.py`.
-
-**Documentation:**
-- Detailed documentation can be found in the `docs` directory.
+3. Open the: `main.ipynb` file and run the cells.
 
 ### [3. Technical Physics: Modeling Sea Debris Trajectories](Prosjekt3-TekniskFysikk)
 
@@ -64,12 +58,9 @@ This project models the trajectories of sea debris based on meteorological data,
 - NumPy, Matplotlib, scipy, xarray, cartopy
 
 **How to Run:**
-1. Navigate to the `technical-physics-sea-debris` directory.
-2. Install dependencies: `pip install -r requirements.txt`.
-3. Run the model: `python model_debris.py`.
-
-**Documentation:**
-- Detailed documentation can be found in the `docs` directory.
+1. Navigate to the `Prosjekt3-TekniskFysikk` directory
+2. Install dependencies: `pip install -r requirements.txt`
+3. Run the: `main.ipynb` notebook
 
 ## License
 
