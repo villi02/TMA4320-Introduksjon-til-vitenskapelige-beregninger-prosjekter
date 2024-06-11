@@ -4,9 +4,8 @@ Welcome to the repository containing three distinct projects focusing on differe
 
 NB! Notebooks are mostly written in Norwegian
 
-## Projects
 
-### [1. Biophysics: Simulating Polymers using Monte Carlo](Prosjekt1-BioFysikk)
+## [1. Biophysics: Simulating Polymers using Monte Carlo](Prosjekt1-BioFysikk)
 
 <p align="center">
   <img src="./images/biophysics_polymer_simulation.png" alt="Polymer Simulation" style="width: 50%; max-width: 300px; height: auto;">
@@ -31,7 +30,7 @@ This project involves the simulation of polymer chains to study their physical p
 2. Install dependencies: `pip install -r requirements.txt`.
 3. Run simulations in the `main.ipynb` notebook.
 
-### [2. Industrial Mathematics: Creating a Transformer from Scratch](Prosjekt2-IndustriellMatematikk)
+## [2. Industrial Mathematics: Creating a Transformer from Scratch](Prosjekt2-IndustriellMatematikk)
 
 <p align="center">
   <img src="./images/industrial_mathematics_transformer.png" alt="Transformer Architecture" style="width: 50%; max-width: 300px; height: auto;">
@@ -56,7 +55,7 @@ This project involves the implementation of a Transformer neural network from sc
 2. Install dependencies: `pip install -r requirements.txt`.
 3. Open the: `main.ipynb` file and run the cells.
 
-### [3. Technical Physics: Modeling Sea Debris Trajectories](Prosjekt3-TekniskFysikk)
+## [3. Technical Physics: Modeling Sea Debris Trajectories](Prosjekt3-TekniskFysikk)
 
 <p align="center">
   <img src="./images/technical_physics_sea_debris.png" alt="Sea Debris Trajectories" style="width: 50%; max-width: 300px; height: auto;">
