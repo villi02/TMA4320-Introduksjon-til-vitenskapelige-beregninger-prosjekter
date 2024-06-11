@@ -80,7 +80,8 @@ This project models the trajectories of sea debris based on meteorological data,
 
 1. Navigate to the `Prosjekt3-TekniskFysikk` directory
 2. Install dependencies: `pip install -r requirements.txt`
-3. Run the: `main.ipynb` notebook
+3. Download dataset from `http://folk.ntnu.no/nordam/data/NorKyst-800m.nc`
+4. Run the: `main.ipynb` notebook
 
 ## License
 
